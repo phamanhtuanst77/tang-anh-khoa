@@ -6,7 +6,7 @@ import time
 # 1. CẤU HÌNH API KEY (DÁN MÃ GEMINI CỦA ANH VÀO ĐÂY)
 # =========================================================
 # Anh dán mã API Key lấy từ aistudio.google.com vào đây:
-MY_API_KEY = "AIzaSyC2RNJnlHY1dmgpb2CbbBBxEHTN5ox2Ag"
+MY_API_KEY = "AIzaSyC2RNJnlHY1dmgpb2CbbBBxEHTN5ox2Acg"
 
 # =========================================================
 # 2. DANH MỤC ÔN THI 7 MÔN CHI TIẾT
@@ -106,4 +106,5 @@ if MY_API_KEY.startswith("AIza"):
 else:
     st.error("Bố Tuấn chưa dán API Key Gemini hợp lệ.")
 
-st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Yêu con trai nhiều! - Bố Tuấn</p>', unsafe_allow_html=True)
+st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Try your best! - Mr Bin</p>', unsafe_allow_html=True)
+
