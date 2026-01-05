@@ -5,7 +5,7 @@ from openai import OpenAI
 # 1. CẤU HÌNH API KEY GROK (XAI)
 # =========================================================
 # Anh dán mã Grok (xai-...) vào giữa hai dấu ngoặc kép này:
-GROK_API_KEY = "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"
+GROK_API_KEY = "xai-rPOTBsQrPifW6PXGdzaG92Yam6XJzDuM9gA8f1d9hXWVfmGuIZpA0lpIpojP1kIy85nSQgDCfpnTYtG9"
 
 # =========================================================
 # 2. DANH MỤC ÔN THI 7 MÔN (DÀNH CHO ANH KHOA)
@@ -104,3 +104,4 @@ else:
     st.error("Bố Tuấn ơi, anh chưa dán mã API Key của Grok (xai-...) vào dòng số 10 rồi!")
 
 st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Yêu con trai nhiều! - Bố Tuấn</p>', unsafe_allow_html=True)
+
