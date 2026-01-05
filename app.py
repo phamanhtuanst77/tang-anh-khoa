@@ -4,7 +4,7 @@ import google.generativeai as genai
 # =========================================================
 # 1. CẤU HÌNH API KEY (Tích hợp sẵn)
 # =========================================================
-MY_API_KEY = "AIzaSyAlG2DIcC3QUX7PlTEUQXIVh-dyJ4O5_nE"
+MY_API_KEY = "AIzaSyC2RNJnlHY1dmgpb2CbbBBxEHTN5ox2Ag"
 
 # =========================================================
 # 2. DANH MỤC ÔN THI CHI TIẾT 7 MÔN
@@ -24,7 +24,6 @@ MENU_ON_THI = {
 # =========================================================
 st.set_page_config(page_title="Quà Tặng Anh Khoa", page_icon="🛡️", layout="wide")
 
-# CSS cho giao diện (Tách riêng để tránh lỗi Syntax)
 st.markdown("""
     <style>
     .stApp { background-color: #f4f7f6; }
@@ -55,17 +54,15 @@ if MY_API_KEY:
     try:
         genai.configure(api_key=MY_API_KEY)
         
-        # Thiết lập Prompt hệ thống chuyên sâu
-        # Lưu ý: Sử dụng tên model chuẩn "gemini-1.5-flash"
+        # SỬA ĐỔI: Sử dụng tên model trực tiếp để tránh lỗi version
         model = genai.GenerativeModel(
             model_name="gemini-1.5-flash",
-            system_instruction=f"Bạn là siêu gia sư ôn thi môn {subject} cho Anh Khoa. Luôn bắt đầu bằng: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'. Hãy giải thích dễ hiểu, bám sát đề thi vào 10."
+            system_instruction=f"Bạn là siêu gia sư môn {subject} giúp Anh Khoa ôn thi vào 10. Luôn bắt đầu bằng: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'. Trình bày dễ hiểu, bám sát SGK."
         )
 
         if "messages" not in st.session_state:
             st.session_state.messages = []
 
-        # Tự động xóa chat khi đổi môn
         if "current_sub" not in st.session_state or st.session_state.current_sub != subject:
             st.session_state.messages = []
             st.session_state.current_sub = subject
@@ -78,6 +75,7 @@ if MY_API_KEY:
             if not st.session_state.messages or st.session_state.messages[-1]["content"] != prompt:
                 st.session_state.messages.append({"role": "user", "content": prompt})
                 with st.spinner("Đang soạn bài giảng..."):
+                    # GỌI AI
                     response = model.generate_content(prompt)
                     st.session_state.messages.append({"role": "assistant", "content": response.text})
                     st.rerun()
@@ -92,10 +90,9 @@ if MY_API_KEY:
                 if "đúng" in resp.text.lower(): st.balloons()
 
     except Exception as e:
-        # Nếu vẫn lỗi 404, hiển thị hướng dẫn cụ thể
-        st.error(f"Lỗi kết nối AI: {e}")
-        st.info("Bố Tuấn ơi, anh hãy kiểm tra lại file requirements.txt trên GitHub đã có dòng 'google-generativeai>=0.7.2' chưa nhé.")
+        st.error(f"Lỗi hệ thống: {e}")
+        st.info("Bố Tuấn thử nhấn 'Delete' rồi 'Deploy' lại App trên Streamlit để cập nhật thư viện mới nhất nhé.")
 else:
-    st.error("Chưa tìm thấy API Key ở dòng số 8.")
+    st.error("Chưa có API Key.")
 
 st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Yêu con trai nhiều! - Bố Tuấn</p>', unsafe_allow_html=True)
