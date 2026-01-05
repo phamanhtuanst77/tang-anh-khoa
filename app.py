@@ -114,8 +114,9 @@ with st.sidebar:
 # ==========================================
 # 4. KẾT NỐI AI & XỬ LÝ
 # ==========================================
-if MY_API_KEY = "AIzaSyC2RNJnlHY1dmgpb2CbbBBxEHTN5ox2Acg":
-    genai.configure(api_key=MY_API_KEY)
+if MY_API_KEY:  # Chỉ cần viết thế này là dứt điểm lỗi
+    try:
+        genai.configure(api_key=MY_API_KEY)
     
     # Lệnh hệ thống (System Instruction)
     sys_msg = f"""Bạn là siêu gia sư giúp Anh Khoa ôn thi môn {subject}. 
@@ -159,6 +160,7 @@ if MY_API_KEY = "AIzaSyC2RNJnlHY1dmgpb2CbbBBxEHTN5ox2Acg":
 else:
 
     st.error("Bố Tuấn ơi, anh chưa dán API Key vào dòng số 10 rồi!")
+
 
 
 
