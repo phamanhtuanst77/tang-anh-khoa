@@ -2,83 +2,21 @@ import streamlit as st
 import google.generativeai as genai
 
 # =========================================================
-# 1. CẤU HÌNH API KEY (Duy nhất 1 chỗ này)
+# 1. CẤU HÌNH API KEY (DÁN VÀO ĐÂY)
 # =========================================================
-# Anh Tuấn dán mã API Key vào giữa hai dấu ngoặc kép dưới đây:
 MY_API_KEY = "AIzaSyAlG2DIcC3QUX7PlTEUQXIVh-dyJ4O5_nE"
 
 # =========================================================
-# 2. DANH MỤC ÔN THI CHI TIẾT 7 MÔN (Bám sát SGK & Đề thi)
+# 2. DANH MỤC ÔN THI CHI TIẾT 7 MÔN
 # =========================================================
 MENU_ON_THI = {
-    "Môn Toán": [
-        "Rút gọn biểu thức và bài toán liên quan",
-        "Giải hệ phương trình bậc nhất 2 ẩn",
-        "Phương trình bậc hai & Hệ thức Vi-ét",
-        "Toán Chuyển động / Năng suất / Hình học",
-        "Hàm số y = ax^2 và đường thẳng y = ax + b",
-        "Tứ giác nội tiếp và Hình học đường tròn",
-        "Hình trụ - Hình nón - Hình cầu",
-        "Bài toán bất đẳng thức & Cực trị (Câu lấy điểm 10)"
-    ],
-    "Môn Ngữ Văn": [
-        "Nghị luận xã hội (Tư tưởng đạo lý / Hiện tượng đời sống)",
-        "Truyện: Làng - Lặng lẽ Sa Pa - Chiếc lược ngà",
-        "Thơ: Đồng chí - Bài thơ về tiểu đội xe không kính",
-        "Thơ: Đoàn thuyền đánh cá - Bếp lửa - Sang thu",
-        "Thơ: Viếng lăng Bác - Nói với con",
-        "Văn bản nhật dụng & Kỹ năng đọc hiểu",
-        "Cách lập dàn ý và viết mở bài/kết bài ấn tượng",
-        "Các thành phần biệt lập & Liên kết câu"
-    ],
-    "Môn Tiếng Anh": [
-        "Hệ thống 12 Thì (Tenses) trọng tâm",
-        "Câu bị động (Passive Voice) & Câu gián tiếp",
-        "Câu điều kiện (Type 1, 2) & Câu ước (Wish)",
-        "Mệnh đề quan hệ (Relative Clauses)",
-        "Cấu trúc so sánh & Cụm động từ (Phrasal Verbs)",
-        "Trọng âm & Phát âm (Phonetics)",
-        "Kỹ năng làm bài Đọc hiểu & Điền từ",
-        "Viết lại câu sao cho nghĩa không đổi"
-    ],
-    "Môn Vật Lý": [
-        "Điện trở - Định luật Ôm - Đoạn mạch nối tiếp/song song",
-        "Công suất điện - Điện năng tiêu thụ (Định luật Joule-Lenser)",
-        "Hiện tượng cảm ứng điện từ - Máy biến thế",
-        "Hiện tượng khúc xạ ánh sáng",
-        "Thấu kính hội tụ & Thấu kính phân kỳ",
-        "Sự tạo ảnh trong Mắt - Máy ảnh - Kính lúp",
-        "Định luật bảo toàn và chuyển hóa năng lượng"
-    ],
-    "Môn Hóa Học": [
-        "Oxide - Acid - Base - Muối (Tính chất & Phản ứng)",
-        "Mối quan hệ giữa các hợp chất vô cơ",
-        "Kim loại (Al, Fe) & Phi kim (Cl, C, Si)",
-        "Bảng tuần hoàn các nguyên tố hóa học",
-        "Hydrocarbon: Methane, Ethylene, Acetylene, Benzene",
-        "Dẫn xuất Hydrocarbon: Rượu Ethyl, Axit Axetic",
-        "Chất béo - Protein - Polyme",
-        "Bài toán tính theo phương trình & nồng độ dung dịch"
-    ],
-    "Môn Lịch Sử": [
-        "Lịch sử thế giới sau 1945 (Liên Xô, Mỹ, Nhật, Á-Phi-Mỹ Latinh)",
-        "Các cuộc cách mạng khoa học - kỹ thuật",
-        "Lịch sử VN 1919 - 1930 (Đảng ra đời)",
-        "Cuộc vận động tiến tới CMT8 năm 1945",
-        "Kháng chiến chống Pháp (1946 - 1954)",
-        "Kháng chiến chống Mỹ (1954 - 1975)",
-        "Lịch sử VN từ 1975 đến nay"
-    ],
-    "Môn Địa Lý": [
-        "Địa lý dân cư & Các loại hình quần cư VN",
-        "Các ngành kinh tế (Nông nghiệp, Công nghiệp, Dịch vụ)",
-        "Vùng Trung du và miền núi Bắc Bộ",
-        "Vùng Đồng bằng sông Hồng & Bắc Trung Bộ",
-        "Vùng Duyên hải Nam Trung Bộ & Tây Nguyên",
-        "Vùng Đông Nam Bộ & Đồng bằng sông Cửu Long",
-        "Phát triển kinh tế biển & Đảo",
-        "Kỹ năng vẽ và phân tích biểu đồ Địa lý"
-    ]
+    "Môn Toán": ["Rút gọn biểu thức", "Hệ thức Vi-ét", "Toán Chuyển động/Năng suất", "Hàm số & Đồ thị", "Tứ giác nội tiếp", "Hình học không gian", "Bất đẳng thức (Điểm 10)"],
+    "Môn Ngữ Văn": ["Nghị luận xã hội", "Truyện lớp 9 trọng tâm", "Thơ lớp 9 trọng tâm", "Cách lập dàn ý văn học", "Kỹ năng đọc hiểu văn bản", "Các thành phần biệt lập"],
+    "Môn Tiếng Anh": ["12 Thì tiếng Anh", "Câu bị động & Gián tiếp", "Câu điều kiện & Wish", "Mệnh đề quan hệ", "Trọng âm & Phát âm", "Kỹ năng Reading & Writing"],
+    "Môn Vật Lý": ["Định luật Ôm & Điện trở", "Công suất & Điện năng", "Thấu kính hội tụ/phân kỳ", "Khúc xạ ánh sáng", "Máy biến thế & Truyền tải điện"],
+    "Môn Hóa Học": ["Tính chất Acid/Base/Muối", "Chuỗi phản ứng vô cơ", "Bảng tuần hoàn", "Hydrocarbon (Methane, Etilen...)", "Rượu & Axit hữu cơ", "Tính toán nồng độ dung dịch"],
+    "Môn Lịch Sử": ["Lịch sử thế giới sau 1945", "Cách mạng 8 & Kháng chiến Pháp/Mỹ", "Lịch sử VN từ 1975", "Sơ đồ mốc thời gian quan trọng"],
+    "Môn Địa Lý": ["Địa lý dân cư & Kinh tế VN", "7 vùng kinh tế trọng điểm", "Địa lý biển đảo", "Kỹ năng vẽ/đọc biểu đồ"]
 }
 
 # =========================================================
@@ -86,19 +24,78 @@ MENU_ON_THI = {
 # =========================================================
 st.set_page_config(page_title="Quà Tặng Anh Khoa", page_icon="🛡️", layout="wide")
 
-st.markdown(f"""
+# Phần CSS Header (Đã sửa lỗi ngoặc để không gây SyntaxError)
+st.markdown("""
     <style>
-    .stApp {{ background-color: #f4f7f6; }}
-    .main-header {{ 
+    .stApp { background-color: #f4f7f6; }
+    .main-header { 
         background-color: #1a2a6c; padding: 30px; border-radius: 20px; 
         color: white; text-align: center; margin-bottom: 30px;
-    }}
+    }
     </style>
     <div class="main-header">
         <h1>🌟 LỘ TRÌNH ÔN THI CHUYỂN CẤP TOÀN DIỆN</h1>
         <h2 style="color: #fdbb2d;">Bố Tuấn thiết kế riêng cho Anh Khoa</h2>
-        <p>Con tr
+        <p>Con trai hãy vững tin, bố luôn đồng hành cùng con!</p>
+    </div>
+    """, unsafe_allow_html=True)
 
+# Sidebar chọn môn
+with st.sidebar:
+    st.title("📚 CHỌN MÔN HỌC")
+    subject = st.radio("", list(MENU_ON_THI.keys()))
+    st.markdown("---")
+    st.markdown("### 🎯 CHUYÊN ĐỀ")
+    selected_topic = st.selectbox("Kích chọn học ngay:", ["Chọn nội dung..."] + MENU_ON_THI[subject])
 
+# =========================================================
+# 4. KẾT NỐI AI & XỬ LÝ (LOGIC)
+# =========================================================
 
+# Kiểm tra API Key có đúng định dạng không
+if MY_API_KEY.startswith("AIza"):
+    try:
+        genai.configure(api_key=MY_API_KEY)
+        
+        # Thiết lập Prompt hệ thống
+        sys_msg = f"Bạn là siêu gia sư ôn thi môn {subject} giúp Anh Khoa. Luôn chào: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'"
+        model = genai.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=sys_msg)
 
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+
+        # Reset chat khi đổi môn
+        if "current_sub" not in st.session_state or st.session_state.current_sub != subject:
+            st.session_state.messages = []
+            st.session_state.current_sub = subject
+
+        # Hiển thị lịch sử chat
+        for m in st.session_state.messages:
+            with st.chat_message(m["role"]): st.markdown(m["content"])
+
+        # Xử lý chọn từ mục lục
+        if selected_topic != "Chọn nội dung...":
+            prompt = f"Dạy cho con chuyên sâu về chuyên đề: {selected_topic}"
+            if not st.session_state.messages or st.session_state.messages[-1]["content"] != prompt:
+                st.session_state.messages.append({"role": "user", "content": prompt})
+                with st.spinner("Đang soạn bài giảng..."):
+                    response = model.generate_content(prompt)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                    st.rerun()
+
+        # Chat tự do
+        if user_in := st.chat_input("Anh Khoa cần hỏi gì thêm không?"):
+            st.session_state.messages.append({"role": "user", "content": user_in})
+            with st.chat_message("user"): st.markdown(user_in)
+            with st.chat_message("assistant"):
+                resp = model.generate_content(user_in)
+                st.markdown(resp.text)
+                st.session_state.messages.append({"role": "assistant", "content": resp.text})
+                if "đúng" in resp.text.lower(): st.balloons()
+
+    except Exception as e:
+        st.error(f"Lỗi hệ thống: {e}")
+else:
+    st.error("Cảnh báo: API Key ở dòng số 8 chưa đúng. Anh Tuấn hãy kiểm tra lại mã mã Key nhé!")
+
+st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Yêu con trai nhiều! - Bố Tuấn</p>', unsafe_allow_html=True)
