@@ -1,10 +1,7 @@
-import streamlit as st
-import google.generativeai as genai
-
 # =========================================================
-# 1. CẤU HÌNH API KEY (TÍCH HỢP SẴN)
+# 1. CẤU HÌNH API KEY (ANH DÁN MÃ MỚI VÀO ĐÂY)
 # =========================================================
-# Anh dán mã API Key mới nhất vào đây:
+# Anh dán mã mới vừa tạo vào giữa hai dấu ngoặc kép:
 MY_API_KEY = "AIzaSyBoXoD5BIeeWf8-9fQ1CyDT5n3ZD-mln9k"
 
 # =========================================================
@@ -23,7 +20,7 @@ MENU_ON_THI = {
 # =========================================================
 # 3. GIAO DIỆN APP (UI)
 # =========================================================
-st.set_page_config(page_title="Lộ Trình Anh Khoa", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="Quà Tặng Anh Khoa", page_icon="🛡️", layout="wide")
 
 st.markdown("""
     <style>
@@ -45,62 +42,56 @@ with st.sidebar:
     subject = st.radio("", list(MENU_ON_THI.keys()))
     st.markdown("---")
     st.markdown("### 🎯 CHUYÊN ĐỀ")
-    selected_topic = st.selectbox("Chọn để học ngay:", ["Chọn nội dung..."] + MENU_ON_THI[subject])
+    selected_topic = st.selectbox("Kích chọn học ngay:", ["Chọn nội dung..."] + MENU_ON_THI[subject])
 
 # =========================================================
-# 4. KẾT NỐI AI & TỰ ĐỘNG CHỌN MODEL TỐT NHẤT
+# 4. KẾT NỐI AI (SỬ DỤNG MODEL 1.5 FLASH ỔN ĐỊNH)
 # =========================================================
 
 if MY_API_KEY.startswith("AIza"):
     try:
         genai.configure(api_key=MY_API_KEY)
         
-        # Tự động tìm model khả dụng (Tránh lỗi 404 vĩnh viễn)
-        if "model_to_use" not in st.session_state:
-            available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-            # Ưu tiên các dòng mới nhất 2.0 -> 1.5 -> pro/flash
-            preferred = ["models/gemini-2.0-flash", "models/gemini-1.5-flash", "models/gemini-pro"]
-            st.session_state.model_to_use = next((m for m in preferred if m in available_models), available_models[0] if available_models else None)
+        # Cố định bản 1.5 Flash để tránh lỗi hạn ngạch (Quota)
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=f"Bạn là siêu gia sư môn {subject} giúp Anh Khoa. Luôn chào: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'"
+        )
 
-        if not st.session_state.model_to_use:
-            st.error("Tài khoản của anh chưa được kích hoạt model AI nào. Hãy kiểm tra Google AI Studio.")
-        else:
-            model = genai.GenerativeModel(
-                model_name=st.session_state.model_to_use,
-                system_instruction=f"Bạn là siêu gia sư môn {subject} giúp Anh Khoa ôn thi vào 10. Luôn bắt đầu bằng: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'"
-            )
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
 
-            if "messages" not in st.session_state:
-                st.session_state.messages = []
+        if "current_sub" not in st.session_state or st.session_state.current_sub != subject:
+            st.session_state.messages = []
+            st.session_state.current_sub = subject
 
-            if "current_sub" not in st.session_state or st.session_state.current_sub != subject:
-                st.session_state.messages = []
-                st.session_state.current_sub = subject
+        for m in st.session_state.messages:
+            with st.chat_message(m["role"]): st.markdown(m["content"])
 
-            for m in st.session_state.messages:
-                with st.chat_message(m["role"]): st.markdown(m["content"])
+        if selected_topic != "Chọn nội dung...":
+            prompt = f"Dạy cho con chuyên sâu về chuyên đề: {selected_topic}"
+            if not st.session_state.messages or st.session_state.messages[-1]["content"] != prompt:
+                st.session_state.messages.append({"role": "user", "content": prompt})
+                with st.spinner("Đang soạn bài..."):
+                    response = model.generate_content(prompt)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                    st.rerun()
 
-            if selected_topic != "Chọn nội dung...":
-                prompt = f"Dạy cho con chuyên sâu về chuyên đề: {selected_topic}"
-                if not st.session_state.messages or st.session_state.messages[-1]["content"] != prompt:
-                    st.session_state.messages.append({"role": "user", "content": prompt})
-                    with st.spinner("Thầy đang soạn bài giảng mới nhất..."):
-                        response = model.generate_content(prompt)
-                        st.session_state.messages.append({"role": "assistant", "content": response.text})
-                        st.rerun()
-
-            if user_in := st.chat_input("Anh Khoa hỏi thêm thầy điều gì không?"):
-                st.session_state.messages.append({"role": "user", "content": user_in})
-                with st.chat_message("user"): st.markdown(user_in)
-                with st.chat_message("assistant"):
-                    resp = model.generate_content(user_in)
-                    st.markdown(resp.text)
-                    st.session_state.messages.append({"role": "assistant", "content": resp.text})
-                    if "đúng" in resp.text.lower(): st.balloons()
+        if user_in := st.chat_input("Anh Khoa hỏi thầy nhé..."):
+            st.session_state.messages.append({"role": "user", "content": user_in})
+            with st.chat_message("user"): st.markdown(user_in)
+            with st.chat_message("assistant"):
+                resp = model.generate_content(user_in)
+                st.markdown(resp.text)
+                st.session_state.messages.append({"role": "assistant", "content": resp.text})
+                if "đúng" in resp.text.lower(): st.balloons()
 
     except Exception as e:
-        st.error(f"Lỗi hệ thống: {e}")
+        if "429" in str(e):
+            st.error("Lỗi 429: Hệ thống đang tạm nghỉ một chút do quá nhiều câu hỏi. Anh Khoa hãy đợi 1 phút rồi nhấn F5 nhé!")
+        else:
+            st.error(f"Lỗi hệ thống: {e}")
 else:
-    st.error("Chưa có API Key hợp lệ.")
+    st.error("Bố Tuấn chưa dán API Key mới vào rồi!")
 
 st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Yêu con trai nhiều! - Bố Tuấn</p>', unsafe_allow_html=True)
