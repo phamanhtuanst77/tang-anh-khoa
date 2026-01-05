@@ -1,15 +1,13 @@
 import streamlit as st
 import google.generativeai as genai
-import time
 
 # =========================================================
-# 1. CẤU HÌNH API KEY (DÁN MÃ GEMINI CỦA ANH VÀO ĐÂY)
+# 1. CẤU HÌNH API KEY (ANH DÁN MÃ VÀO ĐÂY)
 # =========================================================
-# Anh dán mã API Key lấy từ aistudio.google.com vào đây:
 MY_API_KEY = "AIzaSyBoXoD5BIeeWf8-9fQ1CyDT5n3ZD-mln9k"
 
 # =========================================================
-# 2. DANH MỤC ÔN THI 7 MÔN CHI TIẾT
+# 2. DANH MỤC ÔN THI 7 MÔN
 # =========================================================
 MENU_ON_THI = {
     "Môn Toán": ["Rút gọn biểu thức", "Hệ thức Vi-ét", "Toán Chuyển động/Năng suất", "Hàm số & Đồ thị", "Tứ giác nội tiếp", "Hình học không gian", "Bất đẳng thức (Điểm 10)"],
@@ -41,58 +39,71 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
+# Khởi tạo trạng thái App
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "last_topic" not in st.session_state:
+    st.session_state.last_topic = ""
+
+# --- SIDEBAR ---
 with st.sidebar:
     st.title("📚 CHỌN MÔN HỌC")
     subject = st.radio("", list(MENU_ON_THI.keys()))
     st.markdown("---")
     st.markdown("### 🎯 CHUYÊN ĐỀ")
-    selected_topic = st.selectbox("Kích chọn học nhanh:", ["Chọn nội dung..."] + MENU_ON_THI[subject])
+    # Sử dụng key để Streamlit theo dõi thay đổi
+    selected_topic = st.selectbox("Kích chọn học nhanh:", ["Chọn nội dung..."] + MENU_ON_THI[subject], key="topic_selector")
+    
     if st.button("Làm mới buổi học"):
         st.session_state.messages = []
+        st.session_state.last_topic = ""
         st.rerun()
 
 # =========================================================
-# 4. KẾT NỐI AI (PHIÊN BẢN ỔN ĐỊNH CAO)
+# 4. KẾT NỐI AI & XỬ LÝ DỮ LIỆU
 # =========================================================
 
-if MY_API_KEY.startswith("AIza"):
+if MY_API_KEY:
     try:
         genai.configure(api_key=MY_API_KEY)
         
-        # Kỹ thuật: Sử dụng trực tiếp model name không qua v1beta để tránh 404
+        # SỬA LỖI 404: Ép model không dùng v1beta
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            system_instruction=f"Bạn là siêu gia sư ôn thi môn {subject} cho Anh Khoa. Luôn chào: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'. Trình bày dễ hiểu, bám sát SGK lớp 9."
+            model_name="gemini-1.5-flash", # Bỏ tiền tố models/ để tránh lỗi endpoint
+            system_instruction=f"Bạn là gia sư chuyên sâu môn {subject} giúp Anh Khoa ôn thi vào 10. Luôn chào: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'. Trình bày bài giảng đầy đủ, dễ hiểu, bám sát đề thi."
         )
 
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
-
+        # Tự động xóa lịch sử khi đổi môn
         if "current_sub" not in st.session_state or st.session_state.current_sub != subject:
             st.session_state.messages = []
             st.session_state.current_sub = subject
 
+        # Hiển thị lịch sử chat
         for m in st.session_state.messages:
             with st.chat_message(m["role"]): st.markdown(m["content"])
 
-        # Xử lý khi chọn từ mục lục
-        if selected_topic != "Chọn nội dung...":
-            user_msg = f"Dạy cho con chuyên sâu về chuyên đề: {selected_topic}"
-            if not st.session_state.messages or st.session_state.messages[-1]["content"] != user_msg:
-                st.session_state.messages.append({"role": "user", "content": user_msg})
+        # LOGIC TỰ ĐỘNG HIỆN BÀI GIẢNG KHI KÍCH CHỌN
+        if selected_topic != "Chọn nội dung..." and selected_topic != st.session_state.last_topic:
+            st.session_state.last_topic = selected_topic
+            user_msg = f"Dạy cho con chuyên sâu về chuyên đề: {selected_topic} trong môn {subject}"
+            
+            # Thêm tin nhắn của người dùng vào lịch sử
+            st.session_state.messages.append({"role": "user", "content": user_msg})
+            with st.chat_message("user"): st.markdown(user_msg)
+            
+            with st.chat_message("assistant"):
                 with st.spinner("Đang soạn bài giảng..."):
+                    # Gọi AI với cơ chế thử lại nếu lỗi
                     try:
                         response = model.generate_content(user_msg)
-                        st.session_state.messages.append({"role": "assistant", "content": response.text})
-                        st.rerun()
-                    except Exception as e:
-                        if "429" in str(e):
-                            st.warning("Hệ thống đang tải, Anh Khoa đợi thầy 10 giây nhé...")
-                            time.sleep(10)
-                            st.rerun()
+                        answer = response.text
+                        st.markdown(answer)
+                        st.session_state.messages.append({"role": "assistant", "content": answer})
+                    except Exception as ai_err:
+                        st.error(f"Lỗi khi gọi AI: {ai_err}")
 
         # Chat tự do
-        if user_in := st.chat_input("Anh Khoa muốn hỏi thêm điều gì không?"):
+        if user_in := st.chat_input("Anh Khoa hỏi thêm thầy điều gì không?"):
             st.session_state.messages.append({"role": "user", "content": user_in})
             with st.chat_message("user"): st.markdown(user_in)
             with st.chat_message("assistant"):
@@ -104,8 +115,6 @@ if MY_API_KEY.startswith("AIza"):
     except Exception as e:
         st.error(f"Lỗi hệ thống: {e}")
 else:
-    st.error("Bố Tuấn chưa dán API Key Gemini hợp lệ.")
+    st.error("Chưa có API Key.")
 
-st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Try your best! - Mr Bin</p>', unsafe_allow_html=True)
-
-
+st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Yêu con trai nhiều! - Bố Tuấn</p>', unsafe_allow_html=True)
