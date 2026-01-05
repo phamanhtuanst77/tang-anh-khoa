@@ -114,7 +114,7 @@ with st.sidebar:
 # ==========================================
 # 4. KẾT NỐI AI & XỬ LÝ
 # ==========================================
-if MY_API_KEY != "AIzaSyC2RNJnlHY1dmgpb2CbbBBxEHTN5ox2Acg":
+if MY_API_KEY != "AIzaSyAEgKe_h4rfLLz_PYP-nGVgLWk4U7EJwqg":
     genai.configure(api_key=MY_API_KEY)
     
     # Lệnh hệ thống (System Instruction)
@@ -157,4 +157,5 @@ if MY_API_KEY != "AIzaSyC2RNJnlHY1dmgpb2CbbBBxEHTN5ox2Acg":
             st.markdown(resp.text)
             st.session_state.messages.append({"role": "assistant", "content": resp.text})
 else:
+
     st.error("Bố Tuấn ơi, anh chưa dán API Key vào dòng số 10 rồi!")
