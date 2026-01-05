@@ -4,7 +4,7 @@ import google.generativeai as genai
 # =========================================================
 # 1. CẤU HÌNH API KEY (Tích hợp sẵn)
 # =========================================================
-MY_API_KEY = "AIzaSyC2RNJnlHY1dmgpb2CbbBBxEHTN5ox2Ag"
+MY_API_KEY = "AIzaSyBoXoD5BIeeWf8-9fQ1CyDT5n3ZD-mln9k"
 
 # =========================================================
 # 2. DANH MỤC ÔN THI CHI TIẾT 7 MÔN
@@ -96,3 +96,4 @@ else:
     st.error("Chưa có API Key.")
 
 st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Yêu con trai nhiều! - Bố Tuấn</p>', unsafe_allow_html=True)
+
