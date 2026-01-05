@@ -5,7 +5,7 @@ import google.generativeai as genai
 # 1. CẤU HÌNH API KEY (Duy nhất 1 chỗ này)
 # =========================================================
 # Anh Tuấn dán mã API Key vào giữa hai dấu ngoặc kép dưới đây:
-MY_API_KEY = "AIzaSyAlG2DIcC3QUX7PlTEUQXIVh-dyJ4O5_nE"
+MY_API_KEY = "AIzaSyCTiPWA0c9UECJ8gTtps-g9N8eciGUaVyg"
 
 # =========================================================
 # 2. DANH MỤC ÔN THI CHI TIẾT 7 MÔN (Bám sát SGK & Đề thi)
@@ -98,3 +98,4 @@ st.markdown(f"""
         <h1>🌟 LỘ TRÌNH ÔN THI CHUYỂN CẤP TOÀN DIỆN</h1>
         <h2 style="color: #fdbb2d;">Bố Tuấn thiết kế riêng cho Anh Khoa</h2>
         <p>Con tr
+
