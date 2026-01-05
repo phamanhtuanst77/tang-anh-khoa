@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # =========================================================
-# 1. CẤU HÌNH API KEY (DÁN VÀO ĐÂY)
+# 1. CẤU HÌNH API KEY (Tích hợp sẵn)
 # =========================================================
 MY_API_KEY = "AIzaSyAlG2DIcC3QUX7PlTEUQXIVh-dyJ4O5_nE"
 
@@ -24,7 +24,7 @@ MENU_ON_THI = {
 # =========================================================
 st.set_page_config(page_title="Quà Tặng Anh Khoa", page_icon="🛡️", layout="wide")
 
-# Phần CSS Header (Đã sửa lỗi ngoặc để không gây SyntaxError)
+# CSS cho giao diện (Tách riêng để tránh lỗi Syntax)
 st.markdown("""
     <style>
     .stApp { background-color: #f4f7f6; }
@@ -40,7 +40,6 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-# Sidebar chọn môn
 with st.sidebar:
     st.title("📚 CHỌN MÔN HỌC")
     subject = st.radio("", list(MENU_ON_THI.keys()))
@@ -52,28 +51,28 @@ with st.sidebar:
 # 4. KẾT NỐI AI & XỬ LÝ (LOGIC)
 # =========================================================
 
-# Kiểm tra API Key có đúng định dạng không
-if MY_API_KEY.startswith("AIza"):
+if MY_API_KEY:
     try:
         genai.configure(api_key=MY_API_KEY)
         
-        # Thiết lập Prompt hệ thống
-        sys_msg = f"Bạn là siêu gia sư ôn thi môn {subject} giúp Anh Khoa. Luôn chào: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'"
-        model = genai.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=sys_msg)
+        # Thiết lập Prompt hệ thống chuyên sâu
+        # Lưu ý: Sử dụng tên model chuẩn "gemini-1.5-flash"
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=f"Bạn là siêu gia sư ôn thi môn {subject} cho Anh Khoa. Luôn bắt đầu bằng: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'. Hãy giải thích dễ hiểu, bám sát đề thi vào 10."
+        )
 
         if "messages" not in st.session_state:
             st.session_state.messages = []
 
-        # Reset chat khi đổi môn
+        # Tự động xóa chat khi đổi môn
         if "current_sub" not in st.session_state or st.session_state.current_sub != subject:
             st.session_state.messages = []
             st.session_state.current_sub = subject
 
-        # Hiển thị lịch sử chat
         for m in st.session_state.messages:
             with st.chat_message(m["role"]): st.markdown(m["content"])
 
-        # Xử lý chọn từ mục lục
         if selected_topic != "Chọn nội dung...":
             prompt = f"Dạy cho con chuyên sâu về chuyên đề: {selected_topic}"
             if not st.session_state.messages or st.session_state.messages[-1]["content"] != prompt:
@@ -83,8 +82,7 @@ if MY_API_KEY.startswith("AIza"):
                     st.session_state.messages.append({"role": "assistant", "content": response.text})
                     st.rerun()
 
-        # Chat tự do
-        if user_in := st.chat_input("Anh Khoa cần hỏi gì thêm không?"):
+        if user_in := st.chat_input("Anh Khoa hỏi thêm thầy điều gì không?"):
             st.session_state.messages.append({"role": "user", "content": user_in})
             with st.chat_message("user"): st.markdown(user_in)
             with st.chat_message("assistant"):
@@ -94,8 +92,10 @@ if MY_API_KEY.startswith("AIza"):
                 if "đúng" in resp.text.lower(): st.balloons()
 
     except Exception as e:
-        st.error(f"Lỗi hệ thống: {e}")
+        # Nếu vẫn lỗi 404, hiển thị hướng dẫn cụ thể
+        st.error(f"Lỗi kết nối AI: {e}")
+        st.info("Bố Tuấn ơi, anh hãy kiểm tra lại file requirements.txt trên GitHub đã có dòng 'google-generativeai>=0.7.2' chưa nhé.")
 else:
-    st.error("Cảnh báo: API Key ở dòng số 8 chưa đúng. Anh Tuấn hãy kiểm tra lại mã mã Key nhé!")
+    st.error("Chưa tìm thấy API Key ở dòng số 8.")
 
 st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Yêu con trai nhiều! - Bố Tuấn</p>', unsafe_allow_html=True)
