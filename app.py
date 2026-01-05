@@ -1,14 +1,15 @@
 import streamlit as st
 import google.generativeai as genai
 
-# ==========================================
-# 1. CẤU HÌNH THÔNG TIN RIÊNG
-# ==========================================
-MY_API_KEY = "AIzaSyC2RNJnlHY1dmgpb2CbbBBxEHTN5ox2Acg" 
+# =========================================================
+# 1. CẤU HÌNH API KEY (Duy nhất 1 chỗ này)
+# =========================================================
+# Anh Tuấn dán mã API Key vào giữa hai dấu ngoặc kép dưới đây:
+MY_API_KEY = "AIzaSyAlG2DIcC3QUX7PlTEUQXIVh-dyJ4O5_nE"
 
-# ==========================================
-# 2. HỆ THỐNG DANH MỤC ÔN THI CHI TIẾT (SGK & ĐỀ THI)
-# ==========================================
+# =========================================================
+# 2. DANH MỤC ÔN THI CHI TIẾT 7 MÔN (Bám sát SGK & Đề thi)
+# =========================================================
 MENU_ON_THI = {
     "Môn Toán": [
         "Rút gọn biểu thức và bài toán liên quan",
@@ -80,10 +81,10 @@ MENU_ON_THI = {
     ]
 }
 
-# ==========================================
-# 3. GIAO DIỆN & CẤU TRÚC APP
-# ==========================================
-st.set_page_config(page_title="Hành Trang Cho Anh Khoa", page_icon="🛡️", layout="wide")
+# =========================================================
+# 3. GIAO DIỆN APP (UI)
+# =========================================================
+st.set_page_config(page_title="Quà Tặng Anh Khoa", page_icon="🛡️", layout="wide")
 
 st.markdown(f"""
     <style>
@@ -92,75 +93,8 @@ st.markdown(f"""
         background-color: #1a2a6c; padding: 30px; border-radius: 20px; 
         color: white; text-align: center; margin-bottom: 30px;
     }}
-    .subject-box {{ 
-        padding: 15px; border-left: 5px solid #b21f1f; 
-        background: white; border-radius: 10px; margin-bottom: 10px;
-    }}
     </style>
     <div class="main-header">
         <h1>🌟 LỘ TRÌNH ÔN THI CHUYỂN CẤP TOÀN DIỆN</h1>
         <h2 style="color: #fdbb2d;">Bố Tuấn thiết kế riêng cho Anh Khoa</h2>
-        <p>Con trai hãy vững tin, bố luôn đồng hành cùng con!</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with st.sidebar:
-    st.title("📚 CHỌN MÔN HỌC")
-    subject = st.radio("", list(MENU_ON_THI.keys()))
-    st.markdown("---")
-    st.markdown("### 🎯 CHUYÊN ĐỀ TRỌNG TÂM")
-    selected_topic = st.selectbox("Chọn để học ngay:", ["Chọn nội dung..."] + MENU_ON_THI[subject])
-
-# ==========================================
-# 4. KẾT NỐI AI & XỬ LÝ
-# ==========================================
-if MY_API_KEY:  # Chỉ cần viết thế này là dứt điểm lỗi
-    try:
-        genai.configure(api_key=MY_API_KEY)
-    
-    # Lệnh hệ thống (System Instruction)
-    sys_msg = f"""Bạn là siêu gia sư giúp Anh Khoa ôn thi môn {subject}. 
-    Mọi bài giảng phải bắt đầu bằng: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'
-    Nội dung phải bám sát chương trình SGK lớp 9 và cấu trúc đề thi vào 10 thực tế.
-    Giải thích dễ hiểu, có ví dụ minh họa và bài tập luyện tập."""
-
-    model = genai.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=sys_msg)
-
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    # Reset chat khi đổi môn để tránh nhầm kiến thức
-    if "current_sub" not in st.session_state: st.session_state.current_sub = subject
-    if st.session_state.current_sub != subject:
-        st.session_state.messages = []
-        st.session_state.current_sub = subject
-
-    # Hiển thị hội thoại
-    for m in st.session_state.messages:
-        with st.chat_message(m["role"]): st.markdown(m["content"])
-
-    # Xử lý khi kích chọn chuyên đề
-    if selected_topic != "Chọn nội dung...":
-        prompt = f"Dạy cho con chuyên sâu về chuyên đề: {selected_topic} của {subject}."
-        if not st.session_state.messages or st.session_state.messages[-1]["content"] != prompt:
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            with st.spinner("Thầy đang soạn bài chất lượng cho con..."):
-                response = model.generate_content(prompt)
-                st.session_state.messages.append({"role": "assistant", "content": response.text})
-                st.rerun()
-
-    # Nhập chat tự do
-    if user_in := st.chat_input("Anh Khoa cần bố hỏi gì thêm về môn này không?"):
-        st.session_state.messages.append({"role": "user", "content": user_in})
-        with st.chat_message("user"): st.markdown(user_in)
-        with st.chat_message("assistant"):
-            resp = model.generate_content(user_in)
-            st.markdown(resp.text)
-            st.session_state.messages.append({"role": "assistant", "content": resp.text})
-else:
-
-    st.error("Bố Tuấn ơi, anh chưa dán API Key vào dòng số 10 rồi!")
-
-
-
-
+        <p>Con tr
