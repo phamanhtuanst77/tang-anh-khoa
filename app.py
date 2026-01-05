@@ -114,7 +114,7 @@ with st.sidebar:
 # ==========================================
 # 4. KẾT NỐI AI & XỬ LÝ
 # ==========================================
-if MY_API_KEY != "DÁN_API_KEY_CỦA_ANH_VÀO_ĐÂY":
+if MY_API_KEY = "DÁN_API_KEY_CỦA_ANH_VÀO_ĐÂY":
     genai.configure(api_key=MY_API_KEY)
     
     # Lệnh hệ thống (System Instruction)
@@ -159,4 +159,5 @@ if MY_API_KEY != "DÁN_API_KEY_CỦA_ANH_VÀO_ĐÂY":
 else:
 
     st.error("Bố Tuấn ơi, anh chưa dán API Key vào dòng số 10 rồi!")
+
 
