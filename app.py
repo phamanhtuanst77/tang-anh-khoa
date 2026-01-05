@@ -1,11 +1,14 @@
-# =========================================================
-# 1. CẤU HÌNH API KEY (ANH DÁN MÃ MỚI VÀO ĐÂY)
-# =========================================================
-# Anh dán mã mới vừa tạo vào giữa hai dấu ngoặc kép:
-MY_API_KEY = "AIzaSyBoXoD5BIeeWf8-9fQ1CyDT5n3ZD-mln9k"
+import streamlit as st
+from openai import OpenAI
 
 # =========================================================
-# 2. DANH MỤC ÔN THI CHI TIẾT 7 MÔN
+# 1. CẤU HÌNH API KEY GROK (XAI)
+# =========================================================
+# Anh dán mã Grok (xai-...) vào giữa hai dấu ngoặc kép này:
+GROK_API_KEY = "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"
+
+# =========================================================
+# 2. DANH MỤC ÔN THI 7 MÔN (DÀNH CHO ANH KHOA)
 # =========================================================
 MENU_ON_THI = {
     "Môn Toán": ["Rút gọn biểu thức", "Hệ thức Vi-ét", "Toán Chuyển động/Năng suất", "Hàm số & Đồ thị", "Tứ giác nội tiếp", "Hình học không gian", "Bất đẳng thức (Điểm 10)"],
@@ -18,7 +21,7 @@ MENU_ON_THI = {
 }
 
 # =========================================================
-# 3. GIAO DIỆN APP (UI)
+# 3. GIAO DIỆN APP
 # =========================================================
 st.set_page_config(page_title="Quà Tặng Anh Khoa", page_icon="🛡️", layout="wide")
 
@@ -31,67 +34,73 @@ st.markdown("""
     }
     </style>
     <div class="main-header">
-        <h1>🌟 LỘ TRÌNH ÔN THI CHUYỂN CẤP TOÀN DIỆN</h1>
+        <h1>🚀 HỆ THỐNG ÔN THI VÀO 10 TOÀN DIỆN</h1>
         <h2 style="color: #fdbb2d;">Bố Tuấn thiết kế riêng cho Anh Khoa</h2>
         <p>Con trai hãy vững tin, bố luôn đồng hành cùng con!</p>
     </div>
     """, unsafe_allow_html=True)
 
+# Sidebar chọn môn
 with st.sidebar:
     st.title("📚 CHỌN MÔN HỌC")
     subject = st.radio("", list(MENU_ON_THI.keys()))
     st.markdown("---")
     st.markdown("### 🎯 CHUYÊN ĐỀ")
     selected_topic = st.selectbox("Kích chọn học ngay:", ["Chọn nội dung..."] + MENU_ON_THI[subject])
+    if st.button("Làm mới buổi học"):
+        st.session_state.messages = []
+        st.rerun()
 
 # =========================================================
-# 4. KẾT NỐI AI (SỬ DỤNG MODEL 1.5 FLASH ỔN ĐỊNH)
+# 4. KẾT NỐI GROK AI
 # =========================================================
 
-if MY_API_KEY.startswith("AIza"):
-    try:
-        genai.configure(api_key=MY_API_KEY)
-        
-        # Cố định bản 1.5 Flash để tránh lỗi hạn ngạch (Quota)
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            system_instruction=f"Bạn là siêu gia sư môn {subject} giúp Anh Khoa. Luôn chào: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'"
-        )
+if GROK_API_KEY.startswith("xai-"):
+    client = OpenAI(api_key=GROK_API_KEY, base_url="https://api.x.ai/v1")
+    
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
+    # Reset khi đổi môn
+    if "current_sub" not in st.session_state or st.session_state.current_sub != subject:
+        st.session_state.messages = []
+        st.session_state.current_sub = subject
 
-        if "current_sub" not in st.session_state or st.session_state.current_sub != subject:
-            st.session_state.messages = []
-            st.session_state.current_sub = subject
+    # Hiển thị lịch sử
+    for m in st.session_state.messages:
+        with st.chat_message(m["role"]): st.markdown(m["content"])
 
-        for m in st.session_state.messages:
-            with st.chat_message(m["role"]): st.markdown(m["content"])
+    # Xử lý chọn từ mục lục
+    if selected_topic != "Chọn nội dung...":
+        prompt = f"Chào em, thầy là Grok. Bố Tuấn nhờ thầy dạy cho Anh Khoa chuyên sâu về {subject}, chuyên đề: {selected_topic}. Hãy giảng bài dễ hiểu, bám sát SGK và đề thi vào 10."
+        if not st.session_state.messages or st.session_state.messages[-1]["content"] != prompt:
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.spinner("Grok đang soạn bài giảng cho Anh Khoa..."):
+                response = client.chat.completions.create(
+                    model="grok-beta", # Hoặc "grok-2" tùy gói của anh
+                    messages=[{"role": "system", "content": f"Bạn là gia sư ôn thi vào 10 cho Anh Khoa môn {subject}. Luôn bắt đầu bằng: 'Chào Anh Khoa, bố Tuấn đã chuẩn bị bài học này cho con...'"},
+                              {"role": "user", "content": prompt}]
+                )
+                answer = response.choices[0].message.content
+                st.session_state.messages.append({"role": "assistant", "content": answer})
+                st.rerun()
 
-        if selected_topic != "Chọn nội dung...":
-            prompt = f"Dạy cho con chuyên sâu về chuyên đề: {selected_topic}"
-            if not st.session_state.messages or st.session_state.messages[-1]["content"] != prompt:
-                st.session_state.messages.append({"role": "user", "content": prompt})
-                with st.spinner("Đang soạn bài..."):
-                    response = model.generate_content(prompt)
-                    st.session_state.messages.append({"role": "assistant", "content": response.text})
-                    st.rerun()
-
-        if user_in := st.chat_input("Anh Khoa hỏi thầy nhé..."):
-            st.session_state.messages.append({"role": "user", "content": user_in})
-            with st.chat_message("user"): st.markdown(user_in)
-            with st.chat_message("assistant"):
-                resp = model.generate_content(user_in)
-                st.markdown(resp.text)
-                st.session_state.messages.append({"role": "assistant", "content": resp.text})
-                if "đúng" in resp.text.lower(): st.balloons()
-
-    except Exception as e:
-        if "429" in str(e):
-            st.error("Lỗi 429: Hệ thống đang tạm nghỉ một chút do quá nhiều câu hỏi. Anh Khoa hãy đợi 1 phút rồi nhấn F5 nhé!")
-        else:
-            st.error(f"Lỗi hệ thống: {e}")
+    # Chat tự do
+    if user_in := st.chat_input("Anh Khoa hỏi Grok thêm điều gì không?"):
+        st.session_state.messages.append({"role": "user", "content": user_in})
+        with st.chat_message("user"): st.markdown(user_in)
+        with st.chat_message("assistant"):
+            with st.spinner("Grok đang suy nghĩ..."):
+                response = client.chat.completions.create(
+                    model="grok-beta",
+                    messages=[{"role": "system", "content": f"Bạn là gia sư ôn thi vào 10 cho Anh Khoa môn {subject}."},
+                              *st.session_state.messages]
+                )
+                answer = response.choices[0].message.content
+                st.markdown(answer)
+                st.session_state.messages.append({"role": "assistant", "content": answer})
+                if "đúng" in answer.lower(): st.balloons()
 else:
-    st.error("Bố Tuấn chưa dán API Key mới vào rồi!")
+    st.error("Bố Tuấn ơi, anh chưa dán mã API Key của Grok (xai-...) vào dòng số 10 rồi!")
 
 st.markdown('<p style="text-align: center; color: gray; margin-top: 50px;">Yêu con trai nhiều! - Bố Tuấn</p>', unsafe_allow_html=True)
